@@ -53,7 +53,6 @@ func ParseValidationErrors(err error) map[string]string {
 	return res
 }
 
-
 func SignUp(ctx *gin.Context) {
 	type jsonBody struct {
 		Name     string `json:"name" binding:"required"`
@@ -71,30 +70,6 @@ func SignUp(ctx *gin.Context) {
 		}
 	}
 
-	// if err := ctx.ShouldBindJSON(&body); err != nil {
-	// 	ctx.IndentedJSON(http.StatusBadRequest, gin.H{
-	// 		"error":   true,
-	// 		"message": err.Error(),
-	// 	})
-	// 	return
-	// }
-
-	// if ctx.Bind(&body) != nil {
-	// 	ctx.IndentedJSON(400, gin.H{
-	// 		"error":   true,
-	// 		"message": "invalid json body",
-	// 	})
-	// 	return
-	// }
-
-	// if !utils.IsValidEmail(body.Email) {
-	// 	ctx.IndentedJSON(400, gin.H{
-	// 		"error":   true,
-	// 		"message": "email is invalid",
-	// 	})
-	// 	return
-	// }
-
 	if len(body.Password) < 5 {
 		ctx.IndentedJSON(http.StatusBadRequest, gin.H{
 			"error":   true,
@@ -105,14 +80,9 @@ func SignUp(ctx *gin.Context) {
 
 	service := services.NewAuthenticationService()
 
-	serviceResult := service.GetName()
+	serviceResult := service.SignUp(body.Name, body.Email, body.Password)
 
 	ctx.IndentedJSON(serviceResult.StatusCode, serviceResult.JSON)
-
-	// ctx.IndentedJSON(http.StatusOK, gin.H{
-	// 	"error":   false,
-	// 	"message": "Sign Up bro",
-	// })
 }
 
 // func Key(ctx *gin.Context) {

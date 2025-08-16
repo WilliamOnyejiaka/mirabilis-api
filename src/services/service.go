@@ -1,6 +1,8 @@
 package services
 
 import (
+	"golang.org/x/crypto/bcrypt"
+	"log"
 	"mirabilis-api/src/types"
 )
 
@@ -24,4 +26,23 @@ func (this *BaseService) ServiceResponse(
 	}
 
 	return response
+}
+
+func (this *BaseService) HashPassword(password string) (string, error) {
+	passwordHash, err := bcrypt.GenerateFromPassword([]byte(password), 10)
+
+	if err != nil {
+		log.Println(err.Error())
+		return "", err
+	}
+
+	return string(passwordHash), nil
+}
+
+func (this *BaseService) ComparePassword(hashedPassword string, plainPassword string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(plainPassword))
+	if err != nil {
+		return false
+	}
+	return true
 }

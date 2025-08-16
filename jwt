@@ -1,0 +1,59 @@
+package main
+
+import (
+	"fmt"
+	"time"
+
+	"github.com/golang-jwt/jwt/v5"
+)
+
+func main() {
+	// Secret key for signing
+	secretKey := []byte("my-secret-key")
+
+	// Create a new token with claims
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"user_id": 123,
+		"type":    "admin",
+		"exp":     time.Now().Add(time.Hour * 24).Unix(), // Expires in 24 hours
+	})
+
+	// Sign the token
+	tokenString, err := token.SignedString(secretKey)
+	if err != nil {
+		fmt.Println("Error signing token:", err)
+		return
+	}
+	fmt.Println("Token:", tokenString)
+
+	// Parse and validate the token
+	parsedToken, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		// Verify signing method
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+		return secretKey, nil
+	})
+
+	if err != nil {
+		fmt.Println("Error parsing token:", err)
+		return
+	}
+
+	// Check if token is valid and extract claims
+	if claims, ok := parsedToken.Claims.(jwt.MapClaims); ok && parsedToken.Valid {
+		fmt.Println("User ID:", claims["user_id"])
+		fmt.Println("Role:", claims["role"])
+	} else {
+		fmt.Println("Invalid token")
+	}
+}
+
+import "github.com/gin-gonic/gin"
+
+func JWTMiddleware() gin.HandlerFunc {
+    return func(c *gin.Context) {
+        tokenString := c.GetHeader("Authorization")
+        // Parse and validate token, then proceed or abort
+    }
+}

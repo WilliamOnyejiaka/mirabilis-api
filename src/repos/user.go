@@ -2,6 +2,7 @@ package repos
 
 import (
 	"context"
+	"log"
 	"time"
 
 	"mirabilis-api/src/config"
@@ -29,6 +30,7 @@ func (this *UserRepository) Insert(user models.User) (primitive.ObjectID, error)
 
 	res, err := this.collection.InsertOne(ctx, user)
 	if err != nil {
+		log.Println(err.Error())
 		return primitive.NilObjectID, err
 	}
 	return res.InsertedID.(primitive.ObjectID), nil
@@ -40,12 +42,14 @@ func (this *UserRepository) FindAll() ([]models.User, error) {
 
 	cursor, err := this.collection.Find(ctx, bson.M{})
 	if err != nil {
+		log.Println(err.Error())
 		return nil, err
 	}
 	defer cursor.Close(ctx)
 
 	var users []models.User
 	if err := cursor.All(ctx, &users); err != nil {
+		log.Println(err.Error())
 		return nil, err
 	}
 	return users, nil
@@ -73,14 +77,33 @@ func (this *UserRepository) FindPaginated(page, limit int64) ([]models.User, err
 }
 
 func (this *UserRepository) FindOneByID(id primitive.ObjectID) (*models.User, error) {
-    ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-    defer cancel()
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 
-    var user models.User
-    err := this.collection.FindOne(ctx, bson.M{"_id": id}).Decode(&user)
-    if err != nil {
-        return nil, err // err will be mongo.ErrNoDocuments if not found
-    }
+	var user models.User
+	err := this.collection.FindOne(ctx, bson.M{"_id": id}).Decode(&user)
+	if err != nil {
+		return nil, err // err will be mongo.ErrNoDocuments if not found
+	}
 
-    return &user, nil
+	return &user, nil
+}
+
+func (this *UserRepository) FindOneByEmail(email string) (*models.User, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	var user models.User
+	err := this.collection.FindOne(ctx, bson.M{"email": email}).Decode(&user)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			//* No user found -> return nil without error
+			return nil, nil
+		}
+		// Actual database error
+		log.Println(err.Error())
+		return nil, err
+	}
+
+	return &user, nil
 }
