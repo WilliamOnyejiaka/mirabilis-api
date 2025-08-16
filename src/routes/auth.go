@@ -1,17 +1,17 @@
 package routes
 
 import (
-	"mirabilis-api/src/controllers"
-	"net/http"
-
 	"github.com/gin-gonic/gin"
+	"mirabilis-api/src/controllers"
+	"mirabilis-api/src/middlewares"
+	"net/http"
 )
 
-func Auth(router *gin.Engine) {
+func AuthRoute(router *gin.Engine) {
 	group := router.Group("/api/v1/auth")
 
 	group.POST("/sign-up", controllers.SignUp)
-	// userGroup.GET("/key", middlewares.GetBasicAuthorization, handlers.Key)
+	group.GET("/login", middlewares.GetBasicAuthorization, controllers.Login)
 
 	group.GET("/test", func(ctx *gin.Context) {
 		ctx.IndentedJSON(http.StatusOK, gin.H{

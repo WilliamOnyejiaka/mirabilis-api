@@ -19,5 +19,7 @@ func Envs(key string) string {
 		"port":   os.Getenv("PORT"),
 		"databaseUrl": os.Getenv("DATABASE_URL"),
 		"databaseName": os.Getenv("DATABASE_NAME"),
+		"environment": os.Getenv("ENVIRONMENT"),
+		"secretKey": os.Getenv("SECRET_KEY"),
 	}[key]
 }

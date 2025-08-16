@@ -1,8 +1,6 @@
 package main
 
 import (
-	"context" // Provides Context for deadlines/cancelation across API boundaries.
-	"fmt"
 	"log"
 
 	// "os"
@@ -20,10 +18,6 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"time"
-
-	// "go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 // init() runs automatically when main is ran.
@@ -32,43 +26,14 @@ func init() {
 	config.InitializeDB()
 }
 
-func test() {
-	// Create a new MongoDB client configured with a connection URI.
-	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://localhost:27017"))
-	if err != nil { // Always check errors returned by driver calls.
-		log.Fatal(err) // log.Fatal logs the error and exits the program.
-	}
-
-	// Create a Context with a 10-second timeout for the upcoming connect call.
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel() // Ensure the context's resources are freed when main() returns.
-
-	// Establish the connection to the MongoDB server using the client and context.
-	if err := client.Connect(ctx); err != nil {
-		log.Fatal(err)
-	}
-	// Ensure we cleanly close the connection when main() finishes.
-	defer client.Disconnect(ctx)
-
-	// Select the database ("testdb") and collection ("users") you want to work with.
-	collection := client.Database("testdb").Collection("users")
-
-	// Insert a document into the "users" collection.
-	// Using a map as the BSON document; bson.M or a struct are also common.
-	res, err := collection.InsertOne(ctx, map[string]interface{}{
-		"name": "Alice", // Field "name" with string value.
-		"age":  25,      // Field "age" with numeric value.
-	})
-	if err != nil { // Check if the insert failed.
-		log.Fatal(err)
-	}
-
-	// Print the auto-generated _id of the inserted document (typically a primitive.ObjectID).
-	fmt.Println("Inserted document ID:", res.InsertedID)
-}
-
 // * Program entry function.
 func main() {
+	if config.Envs("environment") == "dev" {
+		gin.SetMode(gin.DebugMode)
+	} else {
+		gin.SetMode(gin.ReleaseMode) // 👈 switch to release mode
+	}
+
 	// Initialize Gin router
 	router := gin.Default()
 	corsConfig := cors.DefaultConfig()
@@ -121,7 +86,8 @@ func main() {
 	})
 
 	//* Controllers
-	routes.Auth(router)
+	routes.AuthRoute(router)
+	routes.UserRoute(router)
 
 	//* Error controllers
 	controllers.MethodNotAllowed(router)

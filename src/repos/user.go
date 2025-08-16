@@ -83,7 +83,13 @@ func (this *UserRepository) FindOneByID(id primitive.ObjectID) (*models.User, er
 	var user models.User
 	err := this.collection.FindOne(ctx, bson.M{"_id": id}).Decode(&user)
 	if err != nil {
-		return nil, err // err will be mongo.ErrNoDocuments if not found
+		if err == mongo.ErrNoDocuments {
+			//* No user found -> return nil without error
+			return nil, nil
+		}
+		// Actual database error
+		log.Println(err.Error())
+		return nil, err
 	}
 
 	return &user, nil

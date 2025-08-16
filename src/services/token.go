@@ -3,6 +3,7 @@ package services
 import (
 	"fmt"
 	"log"
+	"mirabilis-api/src/config"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -14,7 +15,7 @@ type TokenService struct {
 
 func NewTokenService() *TokenService {
 	return &TokenService{
-		secretKey: "helloworld",
+		secretKey: config.Envs("secretKey"),
 	}
 }
 

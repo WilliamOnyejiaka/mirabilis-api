@@ -31,15 +31,15 @@ func (this *AuthenticationService) SignUp(name string, email string, password st
 		return this.base.ServiceResponse(http.StatusInternalServerError, true, "Failed to hash password", nil)
 	}
 
-	// userExists, err := this.repo.FindOneByEmail(email)
+	userExists, err := this.repo.FindOneByEmail(email)
 
-	// if err != nil {
-	// 	return this.base.ServiceResponse(http.StatusInternalServerError, true, "Something went wrong", nil)
-	// }
+	if err != nil {
+		return this.base.ServiceResponse(http.StatusInternalServerError, true, "Something went wrong", nil)
+	}
 
-	// if userExists != nil {
-	// 	return this.base.ServiceResponse(http.StatusBadRequest, true, "Email already exists", nil)
-	// }
+	if userExists != nil {
+		return this.base.ServiceResponse(http.StatusBadRequest, true, "Email already exists", nil)
+	}
 
 	user := models.User{
 		Name:      name,
@@ -60,16 +60,41 @@ func (this *AuthenticationService) SignUp(name string, email string, password st
 		"id": insertedID.Hex(),
 	})
 
-	data, err := tokenService.ParseToken("users",token, []string{"id"})
-
-	if err != nil {
-		log.Println(err)
-		return this.base.ServiceResponse(http.StatusInternalServerError, true, "Something went wrong", nil)
-	}
-
 	return this.base.ServiceResponse(http.StatusOK, false, "User has signed up successfully", map[string]any{
 		"user":  user,
 		"token": token,
-		"hello": data,
 	})
+}
+
+func (this *AuthenticationService) Login(email string, password string) types.ServiceResponse {
+	user, err := this.repo.FindOneByEmail(email)
+
+	if err != nil {
+		return this.base.ServiceResponse(http.StatusInternalServerError, true, "Something went wrong", nil)
+	}
+
+	if user == nil {
+		return this.base.ServiceResponse(http.StatusNotFound, true, "User was not found", nil)
+	}
+
+	validPassword := this.base.ComparePassword(user.Password, password)
+
+	if validPassword == true {
+		tokenService := NewTokenService()
+		token, err := tokenService.CreateToken("user", map[string]any{
+			"id": user.ID.Hex(),
+		})
+
+		if err != nil {
+			log.Println(err)
+			return this.base.ServiceResponse(http.StatusInternalServerError, true, "Something went wrong", nil)
+		}
+
+		return this.base.ServiceResponse(http.StatusOK, false, "User has logged in successfully", map[string]any{
+			"user":  user,
+			"token": token,
+		})
+	}
+
+	return this.base.ServiceResponse(http.StatusBadRequest, true, "Invalid Password", nil)
 }

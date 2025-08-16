@@ -78,45 +78,37 @@ func SignUp(ctx *gin.Context) {
 		return
 	}
 
-	service := services.NewAuthenticationService()
+	var service = services.NewAuthenticationService()
+
 
 	serviceResult := service.SignUp(body.Name, body.Email, body.Password)
 
 	ctx.IndentedJSON(serviceResult.StatusCode, serviceResult.JSON)
 }
 
-// func Key(ctx *gin.Context) {
-// 	password, _ := ctx.Get("password")
-// 	email, _ := ctx.Get("username")
+func Login(ctx *gin.Context) {
+	password, _ := (ctx.Get("password"))
+	email, _ := ctx.Get("username")
 
-// 	if email.(string) == "" {
-// 		ctx.IndentedJSON(500, gin.H{
-// 			"error":   true,
-// 			"message": "email empty",
-// 		})
-// 		return
-// 	}
+	if email.(string) == "" {
+		ctx.IndentedJSON(http.StatusBadRequest, gin.H{
+			"error":   true,
+			"message": "Email is empty",
+		})
+		return
+	}
 
-// 	if password.(string) == "" {
-// 		ctx.IndentedJSON(500, gin.H{
-// 			"error":   true,
-// 			"message": "password empty",
-// 		})
-// 		return
-// 	}
+	if password.(string) == "" {
+		ctx.IndentedJSON(http.StatusBadRequest, gin.H{
+			"error":   true,
+			"message": "Password is empty",
+		})
+		return
+	}
 
-// 	serviceResult := services.Key(email.(string), password.(string), ctx)
+	var service = services.NewAuthenticationService()
 
-// 	if serviceResult.Error {
-// 		ctx.IndentedJSON(serviceResult.StatusCode, gin.H{
-// 			"error":   serviceResult.Error,
-// 			"message": serviceResult.Message,
-// 		})
-// 		return
-// 	}
+	serviceResult := service.Login(email.(string), password.(string))
 
-// 	ctx.IndentedJSON(serviceResult.StatusCode, gin.H{
-// 		"error": serviceResult.Error,
-// 		"data":  serviceResult.Data,
-// 	})
-// }
+	ctx.IndentedJSON(serviceResult.StatusCode, serviceResult.JSON)
+}
