@@ -9,6 +9,7 @@ import (
 
 func UserRoute(router *gin.Engine) {
 	group := router.Group("/api/v1/users")
+	
 	jwtMiddleware :=  middlewares.JWTMiddleware([]string{"user"},[]string{"id"})
 
 	group.GET("/profile",jwtMiddleware,controllers.Profile)

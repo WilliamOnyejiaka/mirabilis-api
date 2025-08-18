@@ -39,5 +39,5 @@ func (this *UserService) Profile(id string) types.ServiceResponse {
 		return this.base.ServiceResponse(http.StatusNotFound, true, "User was not found", nil)
 	}
 
-	return this.base.ServiceResponse(http.StatusBadRequest, true, "User profile was retrieved successfully", user)
+	return this.base.ServiceResponse(http.StatusOK, false, "User profile was retrieved successfully", user)
 }

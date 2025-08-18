@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-func JWTMiddleware(role []string, neededValues []string) gin.HandlerFunc {
+func JWTMiddleware(roles []string, neededValues []string) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		authHeader := ctx.GetHeader("Authorization")
 
@@ -25,16 +25,16 @@ func JWTMiddleware(role []string, neededValues []string) gin.HandlerFunc {
 		token := strings.TrimPrefix(authHeader, "Bearer ")
 
 		tokenService := services.NewTokenService()
-		data, err := tokenService.ParseToken("user", token, neededValues)
+		data, err := tokenService.ParseToken(roles, token, neededValues)
 
 		if err != nil {
-			ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 				"error":   true,
 				"message": err.Error(),
 			})
 			return
 		}
-		
+
 		ctx.Set("data", data)
 
 		ctx.Next()

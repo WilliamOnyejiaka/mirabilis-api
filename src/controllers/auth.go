@@ -1,13 +1,12 @@
 package controllers
 
 import (
-	"mirabilis-api/src/services"
-	"net/http"
-
 	"errors"
-
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
+	"mirabilis-api/src/services"
+	"mirabilis-api/src/types"
+	"net/http"
 )
 
 // * 1️⃣ Define your custom messages **before** using them
@@ -54,15 +53,15 @@ func ParseValidationErrors(err error) map[string]string {
 }
 
 func SignUp(ctx *gin.Context) {
-	type jsonBody struct {
-		Name     string `json:"name" binding:"required"`
-		Email    string `json:"email" binding:"required,email"`
-		Password string `json:"password" binding:"required,min=6"`
+	type formBody struct {
+		Name     string `form:"name" binding:"required"`
+		Email    string `form:"email" binding:"required,email"`
+		Password string `form:"password" binding:"required,min=6"`
 	}
 
-	var body jsonBody
+	var form formBody
 
-	if err := ctx.ShouldBindJSON(&body); err != nil {
+	if err := ctx.ShouldBind(&form); err != nil {
 		errorsMap := ParseValidationErrors(err)
 		for _, msg := range errorsMap {
 			ctx.IndentedJSON(http.StatusBadRequest, gin.H{"error": true, "message": msg})
@@ -70,18 +69,16 @@ func SignUp(ctx *gin.Context) {
 		}
 	}
 
-	if len(body.Password) < 5 {
-		ctx.IndentedJSON(http.StatusBadRequest, gin.H{
-			"error":   true,
-			"message": "password length should be greater than 4",
-		})
-		return
-	}
-
+	image, _, err := ctx.Request.FormFile("image")
 	var service = services.NewAuthenticationService()
+	var serviceResult types.ServiceResponse
 
-
-	serviceResult := service.SignUp(body.Name, body.Email, body.Password)
+	if err != nil {
+		serviceResult = service.SignUp(form.Name, form.Email, form.Password, ctx, nil)
+	} else {
+		serviceResult = service.SignUp(form.Name, form.Email, form.Password, ctx, image)
+		defer image.Close()
+	}
 
 	ctx.IndentedJSON(serviceResult.StatusCode, serviceResult.JSON)
 }

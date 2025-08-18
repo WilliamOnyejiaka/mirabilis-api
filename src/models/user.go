@@ -5,12 +5,14 @@ import (
 	"time"
 )
 
-// User model for MongoDB
+// * User model for MongoDB
 type User struct {
-	ID        primitive.ObjectID `bson:"_id,omitempty" json:"id"`
-	Name      string             `bson:"name" json:"name"`
-	Password  string             `bson:"password" json:"password"`
-	Email     string             `bson:"email" json:"email"`
-	CreatedAt time.Time          `bson:"created_at" json:"created_at"`
-	UpdatedAt time.Time          `bson:"updated_at" json:"updated_at"`
+	ID            primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	Name          string             `bson:"name" json:"name"`
+	Password      string             `bson:"password" json:"-"`
+	Email         string             `bson:"email" json:"email"`
+	ImageURL      string             `bson:"image_url,omitempty" json:"image_url"`
+	ImagePublicID string             `bson:"image_public_id,omitempty" json:"-"`
+	CreatedAt     time.Time          `bson:"created_at" json:"created_at"`
+	UpdatedAt     time.Time          `bson:"updated_at" json:"updated_at"`
 }

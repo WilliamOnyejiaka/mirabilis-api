@@ -16,10 +16,13 @@ func LoadEnvVariables() {
 
 func Envs(key string) string {
 	return map[string]string{
-		"port":   os.Getenv("PORT"),
-		"databaseUrl": os.Getenv("DATABASE_URL"),
+		"port":         os.Getenv("PORT"),
+		"databaseUrl":  os.Getenv("DATABASE_URL"),
 		"databaseName": os.Getenv("DATABASE_NAME"),
-		"environment": os.Getenv("ENVIRONMENT"),
-		"secretKey": os.Getenv("SECRET_KEY"),
+		"environment":  os.Getenv("ENVIRONMENT"),
+		"secretKey":    os.Getenv("SECRET_KEY"),
+		"cloudinaryCloudName":    os.Getenv("CLOUDINARY_CLOUD_NAME"),
+		"cloudinaryApiKey":       os.Getenv("CLOUDINARY_API_KEY"),
+		"cloudinaryApiSecret": os.Getenv("CLOUDINARY_API_SECRET"),
 	}[key]
 }
